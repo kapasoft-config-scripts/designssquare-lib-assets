@@ -1,0 +1,7 @@
+name = DesignsSquare.com Library: Assets
+description = transfers assets for nodes exported/imported via features
+core = 7.x
+version = 7.x-0.1-dev
+project = designssquare_lib_assets
+package = DesignsSquare.com.utilities
+
