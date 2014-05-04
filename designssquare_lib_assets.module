@@ -89,28 +89,31 @@ function _process_assets(&$node, &$export, $module, $mode)
 
 function _export_asset($asset, $mod_name)
 {
-    $dest_dir = _module_asset_dir($asset['uri'], $asset['filename'], $mod_name);
-    if (!file_exists($dest_dir . $asset['filename'])) {
+    module_load_include('module', 'designssquare_lib');
+    $dest_dir = _module_asset_dir($asset['uri'], $mod_name);
+    $dest_full_path = _module_asset_full_path($asset['uri'], $mod_name);
+    if (!file_exists($dest_full_path)) {
         file_prepare_directory($dest_dir, FILE_CREATE_DIRECTORY);
-        file_unmanaged_copy($asset['uri'], $dest_dir, FILE_EXISTS_REPLACE);
+        file_unmanaged_copy($asset['uri'], $dest_full_path, FILE_EXISTS_REPLACE);
     }
 }
 
 //transfers file and adds entry in database if not already present
 function _transfer_asset($asset, $mod_name, $node_type)
 {
-    $source = _module_asset_dir($asset['uri'], $asset['filename'], $mod_name);
+    module_load_include('module', 'designssquare_lib');
+    $source = _module_asset_full_path($asset['uri'], $mod_name);
     $uri = $asset['uri'];
 
-    if (!file_exists($source . $asset['filename'])) {
-        watchdog('designssquare_lib_assets', 'file ' . $asset['filename'] . ' to be imported does not exist in ' . $source);
+    if (!file_exists($source)) {
+        watchdog('designssquare_lib_assets', 'file ' . $source . ' to be imported does not exist in ');
     }
 
     if (!file_exists($uri)) {
         //ensure dir is present
         $directory = drupal_dirname($uri);
         file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
-        file_unmanaged_copy($source . $asset['filename'], $uri);
+        file_unmanaged_copy($source, $uri);
     }
 
     /*****Save File*****/
@@ -138,10 +141,26 @@ function _transfer_asset($asset, $mod_name, $node_type)
     }
 }
 
-function _module_asset_dir($uri, $filename, $mod_name)
-{
-    return drupal_get_path('module', $mod_name) . '/assets/public' . '/' . substr($uri, 9, -strlen($filename));
-}
+//function _module_asset_dir($uri, $filename, $mod_name)
+//{
+//    $path_tokens = explode('/',$uri);
+//    array_pop($path_tokens);
+//    array_shift($path_tokens);
+//    array_shift($path_tokens);//remove double forward slashes
+//    $path_mod_relative = implode('/',$path_tokens);
+//    return drupal_get_path('module', $mod_name) . '/assets/public' . '/' . $path_mod_relative;
+//}
+//
+//function _module_asset_full_path($uri, $filename, $mod_name)
+//{
+//    return _module_asset_dir($uri, $filename, $mod_name).'/'._get_file_name($uri);
+//}
+//
+//function _get_file_name($uri){
+//    $path_tokens = explode('/',$uri);
+//    $filename = array_pop($path_tokens);
+//    return $filename;
+//}
 
 /*from the custom field instance locates all field names referencing assets based on 'file_managed' table
  * param: takes the field name of a custom field instance

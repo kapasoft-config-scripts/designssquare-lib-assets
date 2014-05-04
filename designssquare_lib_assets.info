@@ -5,3 +5,4 @@ version = 7.x-0.1-dev
 project = designssquare_lib_assets
 package = DesignsSquare.com.utilities
 
+dependencies[] = designssquare_lib
