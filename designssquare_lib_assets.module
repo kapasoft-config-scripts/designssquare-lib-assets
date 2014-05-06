@@ -15,9 +15,6 @@ function designssquare_lib_assets_uuid_node_features_export_render_alter(&$expor
 function _process_assets(&$node, &$export, $module, $mode)
 {
     $node_fields = get_object_vars($node);
-    //@ToDo alternative of retrieving fields
-    $bundle = field_info_bundles($node->type);
-    $node_fields2 = field_info_instances('node',$bundle);
     //drupal core field types as listed in field_info_field()
     $core_field_types = array('file', 'entityreference', 'image', 'list_integer', 'list_float', 'list_text', 'list_boolean', 'number_integer', 'number_decimal', 'number_float', 'taxonomy_term_reference', 'text', 'text_long', 'text_with_summary');
     //fields to exclude that is not going to reference an assets
