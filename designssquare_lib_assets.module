@@ -1,5 +1,68 @@
 <?php
 
+//alter 'variable' schema so our callback functions are called
+function designssquare_lib_assets_schema_alter(&$schema)
+{
+    $schema['variable']['export']['export callback'] = 'var_asset_export';
+    $schema['variable']['export']['import callback'] = 'var_asset_import';
+}
+
+//this is most from the 'ctools_export_crud_import' with addition to handle our custom export
+function var_asset_import($code){
+    $schema = ctools_export_get_schema('variable');
+    $export = $schema['export'];
+
+    ob_start();
+    eval($code);
+    ob_end_clean();
+
+    if (empty(${$export['identifier']})) {
+        $errors = ob_get_contents();
+        if (empty($errors)) {
+            $errors = t('No item found.');
+        }
+        return $errors;
+    }
+
+    $item = ${$export['identifier']};
+
+    // Set these defaults just the same way that ctools_export_new_object sets
+    // them.
+    $item->export_type = NULL;
+    $item->{$export['export type string']} = t('Local');
+
+    return $item;
+}
+
+//call at the time of export to insert file info in the export file
+function var_asset_export($object, $indent)
+{
+
+    $file = ''; //asset storage
+
+    if (is_numeric($object->value)) {
+        //possible its references a file
+        $fid_file = db_select('file_usage', 'f')
+            ->fields('f', array('fid', 'type', 'module'))
+//            ->fields('f')
+            ->condition('f.fid', $object->value)
+            ->execute()
+            ->fetchAssoc();
+        if(isset($fid_file['fid']) && $fid_file['type'] == $object->name){
+            //strongarm variable references asset, lets export
+            $file = file_load($fid_file['fid']);
+
+            //export asset itself
+            _export_asset((array)$file, $fid_file['module']);
+        }
+    }
+    $additions = array(
+        'file' => (array)$file
+    );
+    return ctools_export_object('variable', $object, $indent, NULL, $additions);
+}
+
+
 //import assets for all fields(core or custom both alike) from /assets/public folder of the module being enabled
 function designssquare_lib_assets_uuid_node_features_rebuild_alter(&$node, $module)
 {
